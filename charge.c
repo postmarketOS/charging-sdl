@@ -157,33 +157,7 @@ int main (int argc, char** argv) {
             
         if ( !(MODE & MODE_NOTEXT) ) {
             sprintf(percent_text, "%d", get_battery_capacity_from_fs());                
-            r = percent_atlas->shapes[percent_text[0] - 48];
-            double wid = (double)r.w;
-            r.w = (wid/r.h) * battery_icon->h / 8;
-            r.h = (r.h/wid) * battery_icon->h / 8;
-            r.x = screen_w/2 - r.w;
-            if (percent_text[2] != 0) r.x -= r.w/2;
-            r.y = screen_h/2 - r.h/2;
-            SDL_RenderCopy(renderer, percent_atlas->image, &percent_atlas->shapes[percent_text[0] - 48], &r); 
-
-            r = percent_atlas->shapes[percent_text[1] - 48];
-            wid = (double)r.w;
-            r.w = (wid/r.h) * battery_icon->h / 8;
-            r.h = (r.h/wid) * battery_icon->h / 8;
-            r.x = screen_w/2;
-            if (percent_text[2] != 0) r.x -= r.w/2;                
-            r.y = screen_h/2 - r.h/2;
-
-            SDL_RenderCopy(renderer, percent_atlas->image, &percent_atlas->shapes[percent_text[1] - 48], &r); 
-        
-            r = percent_atlas->shapes[percent_text[2] - 48];
-            wid = (double)r.w;
-            r.w = (wid/r.h) * battery_icon->h / 8;
-            r.h = (r.h/wid) * battery_icon->h / 8;
-            r.x = screen_w/2 + r.w/2;
-            r.y = screen_h/2 - r.h/2;
-
-            SDL_RenderCopy(renderer, percent_atlas->image, &percent_atlas->shapes[percent_text[2] - 48], &r); 
+            character_atlas_render_string(renderer, percent_atlas, percent_text, 100, 0, 0);
         }
         SDL_RenderPresent(renderer);
         if(MODE & MODE_TEST) {
