@@ -7,16 +7,7 @@ SDL_Surface* make_battery_icon(int w, int h) {
 #else
     surf = SDL_CreateRGBSurface(0, w, h, 32, 0x000000ff, 0x0000ff00, 0x00ff0000, 0xff000000);
 #endif
-    SDL_Rect bat_rect;
-    if (w > h) {
-        bat_rect.h = h/1.5;
-        bat_rect.w = bat_rect.h/2;
-    }else{
-        bat_rect.w = w/1.5;
-        bat_rect.h = bat_rect.w*2;
-    }
-    bat_rect.x = (w - bat_rect.w) / 2;
-    bat_rect.y = (h - bat_rect.h) / 2;    
+    SDL_Rect bat_rect = *make_battery_rect(w, h);    
 
     SDL_FillRect(surf, NULL, SDL_MapRGBA(surf->format, 0, 0, 0, 255));
     SDL_FillRect(surf, &bat_rect, SDL_MapRGBA(surf->format, 255, 255, 255, 255));

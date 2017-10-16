@@ -152,12 +152,19 @@ int main (int argc, char** argv) {
     SDL_Event ev;
     Uint32 start = SDL_GetTicks();
 
+    SDL_Rect* battery_area = make_battery_rect(screen_w, screen_h);
     while (running) {
         SDL_RenderCopy(renderer, battery_icon_texture, NULL, NULL);
             
         if ( !(MODE & MODE_NOTEXT) ) {
-            sprintf(percent_text, "%d", get_battery_capacity_from_fs());                
-            character_atlas_render_string(renderer, percent_atlas, percent_text, 100, 0, 0);
+            sprintf(percent_text, "%d", get_battery_capacity_from_fs());
+            if (percent_text[2]) {
+                character_atlas_render_string(renderer, percent_atlas, percent_text, battery_area->w * 0.8, 
+                    battery_area->w * 0.1 + battery_area->x, battery_area->y + battery_area->h/2);
+            }else{
+                character_atlas_render_string(renderer, percent_atlas, percent_text, battery_area->w * 0.66 * 0.8, 
+                    battery_area->w * 2.33 * 0.1 + battery_area->x, battery_area->y + battery_area->h/2);  
+            }
         }
         SDL_RenderPresent(renderer);
         if(MODE & MODE_TEST) {
