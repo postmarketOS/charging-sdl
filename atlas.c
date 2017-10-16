@@ -71,6 +71,7 @@ struct character_atlas_item* find_char (struct character_atlas* atlas, Uint16 c)
 }
 int character_atlas_render_string(SDL_Renderer* renderer,struct character_atlas* atlas, const char* str, int w, int x, int y) {
     int len = strlen(str);
+    int maxy = 0;
     struct character_atlas_item** items = (struct character_atlas_item**)malloc(sizeof(struct character_atlas_item*) * len);
     int str_normal_width = 0;
     for(int i = 0; i < len; ++i) {
@@ -79,13 +80,16 @@ int character_atlas_render_string(SDL_Renderer* renderer,struct character_atlas*
             return 1;
         }
         str_normal_width += items[i]->metrics.advance;
+        if (maxy < items[i]->bitmap.h){
+            maxy = items[i]->bitmap.h;
+        }
     }
     
     //how much do we have to change the letter's size by?
     double str_width_factor = (double)w/(double)str_normal_width;
     SDL_Rect r;
     r.x = x;
-    r.y = y;
+    r.y = y - maxy/2;
     for(int i = 0; i < len; ++i) {
         r.w = items[i]->bitmap.w * str_width_factor;
         r.h = items[i]->bitmap.h * str_width_factor;

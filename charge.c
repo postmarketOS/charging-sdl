@@ -1,10 +1,10 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
+#include <SDL2/SDL_power.h>
 
 #include <unistd.h>
 
 #include <atlas.h>
-#include <bat_device.h>
 #include <draw.h>
 
 #define MODE_TEST      1
@@ -40,6 +40,7 @@ int main (int argc, char** argv) {
     unsigned MODE = 0;
     int screen_w = 480;
     int screen_h = 800;
+    int battery_percent;
     
     SDL_Window* window;
     SDL_Renderer* renderer;
@@ -111,10 +112,11 @@ int main (int argc, char** argv) {
     CHECK_CREATE_SUCCESS(battery_icon_texture);
     
     SDL_RenderClear(renderer);
-    
-    if (can_access_battery()) {
+    SDL_GetPowerInfo(NULL, &battery_percent);
+
+    if (battery_percent != -1) {
         LOG("INFO", "able to access battery");
-        LOG("INFO", "current capacity: %d%%", get_battery_capacity_from_fs());
+        LOG("INFO", "current capacity: %d%%", battery_percent);
         LOG("INFO", "using font %s", font);
         if (font == NULL) {
             ERROR("no font specified");
@@ -157,7 +159,8 @@ int main (int argc, char** argv) {
         SDL_RenderCopy(renderer, battery_icon_texture, NULL, NULL);
             
         if ( !(MODE & MODE_NOTEXT) ) {
-            sprintf(percent_text, "%d", get_battery_capacity_from_fs());
+            SDL_GetPowerInfo(NULL, &battery_percent);            
+            sprintf(percent_text, "%d", battery_percent);
             if (percent_text[2]) {
                 character_atlas_render_string(renderer, percent_atlas, percent_text, battery_area->w * 0.8, 
                     battery_area->w * 0.1 + battery_area->x, battery_area->y + battery_area->h/2);
@@ -184,6 +187,7 @@ int main (int argc, char** argv) {
     if( !(MODE & MODE_NOTEXT)) {
         free_character_atlas(percent_atlas);
     }
+    free(battery_area);
     SDL_DestroyTexture(battery_icon_texture);
     SDL_FreeSurface(battery_icon);
     SDL_DestroyRenderer(renderer);    
