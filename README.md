@@ -1,7 +1,7 @@
 # charge-me
 prototype charge required display for pmOS
 
-quick prototype I through together for a charging screen. Right now it needs __a lot__ of work.
+quick prototype I threw together for a charging screen. Right now it needs __a lot__ of work.
 Specifically it's not as performant as it should be, and it only uses one method to check for battery capacity.
 ## build
 1. `cd charge-me`
