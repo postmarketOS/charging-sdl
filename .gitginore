@@ -1,4 +1,4 @@
 *.o
 .vscode
 .swp
-charge
+charging_sdl
