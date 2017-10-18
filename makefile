@@ -9,17 +9,17 @@ LIBS       := $(SDL2_LIBS) -lSDL2_ttf
 SOURCES    := ${wildcard *.c}
 OBJECTS    := $(SOURCES:%.c=%.o)
 
-all: charge
+all: charging_sdl
 
 %.o: %.c
 	@echo CC $<
 	@$(CXX) -c -o $@ $< $(CCFLAGS)
 
-charge: $(OBJECTS)
+charging_sdl: $(OBJECTS)
 	@echo LD $@
 	@$(CC) -o $@ $^ $(CCFLAGS) $(LIBS)
 
 .PHONY: clean
 
 clean:
-	-rm -fv *.o charge
+	-rm -fv *.o charging_sdl

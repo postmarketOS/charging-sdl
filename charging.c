@@ -6,6 +6,7 @@
 
 #include <atlas.h>
 #include <draw.h>
+#define CHARGING_SDL_VERSION "0.1.0"
 
 #define MODE_TEST      1
 #define MODE_NOTEXT    2
@@ -37,6 +38,7 @@
 
 
 int main (int argc, char** argv) {
+    printf("charging_sdl version %s", CHARGING_SDL_VERSION);
     unsigned MODE = 0;
     int screen_w = 480;
     int screen_h = 800;

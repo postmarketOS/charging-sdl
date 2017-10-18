@@ -1,8 +1,12 @@
-# charge-me
-prototype charge required display for pmOS
+# charging_sdl
+"charge required" screen for pmOS.
+This application is young! Consider it __highly__ unstable.
 
-quick prototype I threw together for a charging screen. Right now it needs __a lot__ of work.
-Specifically it's not as performant as it should be, and it only uses one method to check for battery capacity.
+# TODOs
+- display whether or not the device is charging
+- display charging mode if available
+- hide logs
+
 ## build
 1. `cd charge-me`
 2. `make`
