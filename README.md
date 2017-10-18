@@ -1,4 +1,4 @@
-# charging_sdl
+# charging-sdl
 "charge required" screen for pmOS.
 This application is young! Consider it __highly__ unstable.
 
