@@ -25,7 +25,7 @@
     #define ERROR(msg, ...) LOG("ERROR", msg, ##__VA_ARGS__)
 #else
     #define LOG(status, msg, ...)
-    #define ERROR(msg, ...) fprintf(stderr, "[ERROR] "); fprintf(stderr, smg, ##__VA_ARGS)
+    #define ERROR(msg, ...) fprintf(stderr, "[ERROR] "); fprintf(stderr, msg, ##__VA_ARGS)
 #endif
 
 
