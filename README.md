@@ -3,11 +3,11 @@
 This application is young! Consider it __highly__ unstable.
 
 # TODOs
-- display whether or not the device is charging
-- display charging type
-- display battery tempurature
-- hide logs
-- maybe add a config file
+- [ ] display whether or not the device is charging
+- [ ] display charging type
+- [ ] display battery tempurature
+- [ ] hide logs with a command line flag
+- [ ] maybe add a config file
 
 ## build
 1. `cd charging-sdl`
