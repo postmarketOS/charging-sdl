@@ -116,7 +116,7 @@ int main (int argc, char** argv) {
     SDL_RenderClear(renderer);
     SDL_GetPowerInfo(NULL, &battery_percent);
 
-    if (battery_percent != -1) {
+    if (battery_percent != -1 && !(MODE & MODE_NOTEXT)) {
         LOG("INFO", "able to access battery");
         LOG("INFO", "current capacity: %d%%", battery_percent);
         LOG("INFO", "using font %s", font);
@@ -126,24 +126,22 @@ int main (int argc, char** argv) {
             SDL_Quit();  
             exit(1);          
         }
-        if ( !(MODE & MODE_NOTEXT)) {
-            SDL_Color color = {255, 255, 255};
-            TTF_Font* font_struct = TTF_OpenFont(font, 256);
-            if(!font_struct) {
-                ERROR("failed to open font: %s\n", TTF_GetError());
-                TTF_Quit();
-                SDL_Quit();
-                exit(1);            
-            }
-            percent_atlas = create_character_atlas(renderer,"0123456789", color, font_struct);
-            if (percent_atlas) {
-                LOG("INFO", "successfully created percent/number text atlas");
-            } else {
-                ERROR("failed to create font: %s\n", TTF_GetError());
-                TTF_Quit();
-                SDL_Quit();
-                exit(1);     
-            }
+        SDL_Color color = {255, 255, 255};
+        TTF_Font* font_struct = TTF_OpenFont(font, 256);
+        if(!font_struct) {
+            ERROR("failed to open font: %s\n", TTF_GetError());
+            TTF_Quit();
+            SDL_Quit();
+            exit(1);            
+        }
+        percent_atlas = create_character_atlas(renderer,"0123456789", color, font_struct);
+        if (percent_atlas) {
+            LOG("INFO", "successfully created percent/number text atlas");
+        } else {
+            ERROR("failed to create font: %s\n", TTF_GetError());
+            TTF_Quit();
+            SDL_Quit();
+            exit(1);     
         }
     } else {
         LOG("WARNING", "unable to access battery, turning on no text mode");
