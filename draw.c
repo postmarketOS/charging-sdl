@@ -29,5 +29,30 @@ SDL_Surface* make_battery_icon(int w, int h) {
 
     bat_rect.w -= bat_rect.w * 0.4;
     SDL_FillRect(surf, &bat_rect, SDL_MapRGBA(surf->format, 255, 255, 255, 255));
+    draw_line(surf, SDL_MapRGBA(surf->format, 255, 0, 0, 255), 0, 0, w, h);
     return surf;
+}
+
+SDL_Surface* make_lightning_icon(int w, int h){
+    
+}
+
+int draw_line(SDL_Surface* surf, Uint32 c, int x, int y, int x1, int y1) {
+    double mag = sqrt(pow((double)x1-(double)x,2.0f)+ pow((double)y1-(double)y, 2.0f));
+    if(mag == 0){
+        return 1;
+    }
+    double change_x = (x1-x)/mag;
+    double change_y = (y1-y)/mag;
+    double cur_x = x;
+    double cur_y = y;
+
+    Uint32* cur_pix = NULL;
+    while(floor(cur_x) != x1 || floor(cur_y) != y1){
+        cur_pix = (Uint32*) ((Uint8*)surf->pixels + ((long)cur_y * surf->w + (long)cur_x) * 4);
+        *cur_pix = c;
+        
+        cur_x += change_x;
+        cur_y += change_y;
+    }
 }

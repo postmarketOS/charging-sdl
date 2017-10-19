@@ -1,0 +1,7 @@
+{
+    "files.associations": {
+        "sdl_power.h": "c",
+        "sdl_ttf.h": "c",
+        "chrono": "c"
+    }
+}

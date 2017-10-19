@@ -4,7 +4,7 @@ SDL2_LIBS  := $(shell sdl2-config --libs)
 CC       := gcc
 CCFLAGS   := -g -I. $(SDL2_CFLAGS)
 
-LIBS       := $(SDL2_LIBS) -lSDL2_ttf
+LIBS       := $(SDL2_LIBS) -lSDL2_ttf -lm
 
 SOURCES    := ${wildcard *.c}
 OBJECTS    := $(SOURCES:%.c=%.o)
