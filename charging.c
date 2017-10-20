@@ -10,6 +10,7 @@
 
 #define MODE_TEST      1
 #define MODE_NOTEXT    2
+#define MODE_VOLTAGE   4
 
 #define UPTIME 5
 
@@ -18,6 +19,7 @@
     -t: launch %s in test mode\n\
     -n: don't display battery capacity\n\
     -f: font to use\n\
+    -o: attempt to get voltage\n\
 ", appname, appname)
 
 #ifndef NDEBUG
@@ -52,10 +54,11 @@ int main (int argc, char** argv) {
     char* font = NULL;
 
     char opt;
-    while ((opt = getopt(argc, argv, "tnf:")) != -1) {
+    while ((opt = getopt(argc, argv, "tnof:")) != -1) {
         switch (opt) {
         case 't': MODE |= MODE_TEST; break;
         case 'n': MODE |= MODE_NOTEXT; break;
+        case 'o': MODE |= MODE_VOLTAGE; break;
         case 'f': font = optarg; break;
         default:
             DISPLAY_USAGE(argv[0]);
