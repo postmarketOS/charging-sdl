@@ -4,7 +4,6 @@
 #include <SDL2/SDL.h>
 #include <math.h>
 
-#define IN_VARIATION(x, y1, y2) (x > y1-y2 && x < y2+y2)
 /**
   draw line draws a line from (x,y) to (x1, y1)
   @parma surf the surface to draw on
