@@ -1,6 +1,6 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
-#include <SDL2/SDL_power.h>
+#include <libbattery/battery.h>
 
 #include <unistd.h>
 
@@ -36,6 +36,10 @@
     exit(1); \
 }
 
+Uint32 update_bat_info(Uint32 dt, void* data) {
+    battery_fill_info((struct battery_info*)data);
+    return dt;
+}
 
 int main (int argc, char** argv) {
     LOG("INFO", "charging-sdl version %s", CHARGING_SDL_VERSION);
@@ -47,6 +51,7 @@ int main (int argc, char** argv) {
     SDL_Window* window;
     SDL_Renderer* renderer;
 
+    struct battery_info bat_info;
     SDL_Surface* battery_icon;
     struct character_atlas* percent_atlas;
     char* font = NULL;
@@ -62,7 +67,7 @@ int main (int argc, char** argv) {
             exit(1);
         }
     }
-    if (SDL_Init(SDL_INIT_EVENTS | SDL_INIT_VIDEO) < 0) {
+    if (SDL_Init(SDL_INIT_EVENTS | SDL_INIT_VIDEO | SDL_INIT_TIMER) < 0) {
         ERROR("failed to init SDL: %s", SDL_GetError());  
         exit(1);        
     }
@@ -114,11 +119,12 @@ int main (int argc, char** argv) {
     CHECK_CREATE_SUCCESS(battery_icon_texture);
     
     SDL_RenderClear(renderer);
-    SDL_GetPowerInfo(NULL, &battery_percent);
+    battery_fill_info(&bat_info);
+    
     if (!(MODE & MODE_NOTEXT)) {
-        if (battery_percent != -1 ) {
+        if ( bat_info.fraction >= 0 && bat_info.fraction <= 1) {
             LOG("INFO", "able to access battery");
-            LOG("INFO", "current capacity: %d%%", battery_percent);
+            LOG("INFO", "current capacity: %d%%", (int) (bat_info.fraction*100) );
             LOG("INFO", "using font %s", font);
             if (font == NULL) {
                 ERROR("no font specified");
@@ -155,12 +161,13 @@ int main (int argc, char** argv) {
     Uint32 start = SDL_GetTicks();
 
     SDL_Rect* battery_area = make_battery_rect(screen_w, screen_h);
+    
+    SDL_TimerID bat_timer = SDL_AddTimer(500,update_bat_info, (void*)&bat_info);    
     while (running) {
         SDL_RenderCopy(renderer, battery_icon_texture, NULL, NULL);
             
         if ( !(MODE & MODE_NOTEXT) ) {
-            SDL_GetPowerInfo(NULL, &battery_percent);            
-            sprintf(percent_text, "%d", battery_percent);
+            sprintf(percent_text, "%d", (int) (bat_info.fraction*100) );
             if (percent_text[2]) {
                 character_atlas_render_string(renderer, percent_atlas, percent_text, battery_area->w * 0.8, 
                     battery_area->w * 0.1 + battery_area->x, battery_area->y + battery_area->h/2);
@@ -192,6 +199,7 @@ int main (int argc, char** argv) {
     SDL_FreeSurface(battery_icon);
     SDL_DestroyRenderer(renderer);    
     SDL_DestroyWindow(window);
+    SDL_RemoveTimer(bat_timer);
     SDL_Quit();
     TTF_Quit();
 }
