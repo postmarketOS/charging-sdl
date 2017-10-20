@@ -45,7 +45,7 @@ SDL_Surface* make_lightning_icon(int w, int h){
         offset_x = (w - h/2)/2;
         w = h/2;
     }
-    Uint32 white = SDL_MapRGBA(surf->format, 255, 0, 255, 255);
+    Uint32 white = SDL_MapRGBA(surf->format, 255, 255, 255, 255);
     
     draw_line(surf, white,offset_x + w * 0.3, 1, offset_x + w * 0.9, 1);
     
@@ -61,6 +61,7 @@ SDL_Surface* make_lightning_icon(int w, int h){
 
     draw_line(surf, white,offset_x + w * 0.5, h/2, offset_x + w * 0.4, h);
     
+    flood_fill(surf, SDL_MapRGBA(surf->format, 0, 0, 0, 0), white, offset_x + w * 0.5, h/3);
     return surf;
 }
 
@@ -85,4 +86,35 @@ int draw_line(SDL_Surface* surf, Uint32 c, int x, int y, int x1, int y1) {
         cur_x += change_x;
         cur_y += change_y;
     }
+}
+
+int flood_fill(SDL_Surface* surf, Uint32 c, Uint32 r, int x, int y) {
+
+    Uint32* cur_pix = (Uint32*) ((Uint8*)surf->pixels + (x * surf->w + y) * 4);
+    if(*cur_pix != c) {
+        return 1;
+    }
+    cur_pix = (Uint32*) ((Uint8*)surf->pixels + (x * surf->w + y) * 4);
+    *cur_pix = r;
+
+    cur_pix = (Uint32*) ((Uint8*)surf->pixels + (x + 1 * surf->w + y) * 4);            
+    if(*cur_pix != r) {
+        flood_fill(surf, c, r, x + 1, y);
+    }
+    
+    cur_pix = (Uint32*) ((Uint8*)surf->pixels + (x-1 * surf->w + y) * 4);            
+    if(*cur_pix != r) {
+        flood_fill(surf, c, r, x-1, y);
+    }
+        
+    cur_pix = (Uint32*) ((Uint8*)surf->pixels + (x * surf->w + y+1) * 4);            
+    if(*cur_pix != r) {
+        flood_fill(surf, c, r, x, y + 1);
+    }
+
+    cur_pix = (Uint32*) ((Uint8*)surf->pixels + (x * surf->w + y - 1) * 4);            
+    if(*cur_pix != r) {
+        flood_fill(surf, c, r, x, y - 1);
+    }
+    return 0;
 }

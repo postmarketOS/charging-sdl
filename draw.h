@@ -7,6 +7,16 @@
 /**
   draw line draws a line from (x,y) to (x1, y1)
   @parma surf the surface to draw on
+  @param c color to be replaced the area
+  @param r the replacement color
+  @param x the x position to begin flooding
+  @param y the y position to begin flooding
+*/
+int flood_fill(SDL_Surface* surf, Uint32 c, Uint32 r, int x, int y);  
+
+/**
+  draw line draws a line from (x,y) to (x1, y1)
+  @parma surf the surface to draw on
   @param c color to draw the line
   @param x x position of the starting point
   @param y y position of the starting point

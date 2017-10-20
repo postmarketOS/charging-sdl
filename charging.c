@@ -157,7 +157,7 @@ int main (int argc, char** argv) {
     SDL_Rect* battery_area = make_battery_rect(screen_w, screen_h);
     while (running) {
         SDL_RenderCopy(renderer, battery_icon_texture, NULL, NULL);
-            
+        
         if ( !(MODE & MODE_NOTEXT) ) {
             SDL_GetPowerInfo(NULL, &battery_percent);            
             sprintf(percent_text, "%d", battery_percent);
