@@ -52,7 +52,6 @@ Uint32 update_bat_info(Uint32 dt, void* data) {
     struct battery_info bat;
     if (battery_fill_info(&bat)) {
         dev->voltage = bat.voltage;
-        bat.fraction = 0.05;
         if (!isfinite(bat.fraction)){
             dev->percent = -1;
         }else{
