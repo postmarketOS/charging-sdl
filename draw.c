@@ -1,4 +1,17 @@
 #include <draw.h>
+SDL_Rect* make_battery_rect(int w, int h) {
+    SDL_Rect* bat_rect = (SDL_Rect*)malloc(sizeof(SDL_Rect));
+    if (w > h) {
+        bat_rect->h = h/1.5;
+        bat_rect->w = bat_rect->h/2;
+    }else{
+        bat_rect->w = w/1.5;
+        bat_rect->h = bat_rect->w*2;
+    }
+    bat_rect->x = (w - bat_rect->w) / 2;
+    bat_rect->y = (h - bat_rect->h) / 2;  
+    return bat_rect;
+}
 
 SDL_Surface* make_battery_icon(int w, int h) {
     SDL_Surface* surf;
