@@ -87,6 +87,8 @@ int main (int argc, char** argv) {
     struct character_atlas* percent_atlas;
     char* font = NULL;
 
+    SDL_Rect is_charging_area = {.x=0, .y=screen_w/8 * 0.2, .w=screen_w/8, .h=screen_w/8};    
+
     char opt;
     while ((opt = getopt(argc, argv, "tnof:")) != -1) {
         switch (opt) {
@@ -146,7 +148,7 @@ int main (int argc, char** argv) {
     battery_icon = make_battery_icon(screen_w, screen_h);
     CHECK_CREATE_SUCCESS(battery_icon);
 
-    lightning_icon = make_lightning_icon(screen_w, screen_h);
+    lightning_icon = make_lightning_icon(is_charging_area.w, is_charging_area.h);
     CHECK_CREATE_SUCCESS(battery_icon);
 
     LOG("INFO", "creating textures from icons");     
@@ -199,7 +201,6 @@ int main (int argc, char** argv) {
     Uint32 start = SDL_GetTicks();
 
     SDL_Rect battery_area = *make_battery_rect(screen_w, screen_h);
-    SDL_Rect is_charging_area = {.x=0, .y=0, .w=screen_w/4, .h=screen_w/4};
     SDL_TimerID bat_timer = SDL_AddTimer(500, update_bat_info, (void*)&bat_info);
 
     while (running) {

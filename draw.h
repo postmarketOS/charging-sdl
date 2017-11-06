@@ -7,16 +7,6 @@
 /**
   draw line draws a line from (x,y) to (x1, y1)
   @parma surf the surface to draw on
-  @param c color to be replaced the area
-  @param r the replacement color
-  @param x the x position to begin flooding
-  @param y the y position to begin flooding
-*/
-int flood_fill(SDL_Surface* surf, Uint32 c, Uint32 r, int x, int y);  
-
-/**
-  draw line draws a line from (x,y) to (x1, y1)
-  @parma surf the surface to draw on
   @param c color to draw the line
   @param x x position of the starting point
   @param y y position of the starting point
@@ -48,4 +38,15 @@ SDL_Surface* make_lightning_icon(int w, int h);
   @returns returns the rectangle for the batteries body
 */
 SDL_Rect* make_battery_rect(int w, int h);
+
+/**
+  fill_polygon fills in the space within a set of points
+  @parma surf the surface to draw on
+  @param color the color the polygon should be
+  @param points list of points that make up the polygon
+  @param numpoints the number of points in `points`
+  @returns 1 on failure, 0 on success
+*/
+int fill_polygon(SDL_Surface* surf, Uint32 color, SDL_Point * points, int numpoints);
+
 #endif
