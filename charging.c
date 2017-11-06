@@ -44,12 +44,15 @@
 }
 struct battery_device {
     double voltage;
+    int    is_charging;
     int    percent;
 };
 
 Uint32 update_bat_info(Uint32 dt, void* data) {
     struct battery_device* dev = data;
-    
+    dev->voltage = -1;
+    dev->percent = -1;
+    dev->is_charging = 0;
 #ifdef USE_LIBBATTERY
     struct battery_info bat;
     if (battery_fill_info(&bat)) {
@@ -59,13 +62,11 @@ Uint32 update_bat_info(Uint32 dt, void* data) {
         }else{
             dev->percent = (int)(bat.fraction * 100.0);
         }
-    }else{
-        dev->voltage = -1;
-        dev->percent = -1;
+        dev->is_charging = bat.state == CHARGING;       
     }
 #else
     dev->voltage = -1.0;
-    SDL_GetPowerInfo(NULL , &dev->percent);
+    dev->is_charging = SDL_GetPowerInfo(NULL , &dev->percent) == SDL_POWERSTATE_CHARGING;
 #endif
     return dt;
 }
@@ -82,6 +83,7 @@ int main (int argc, char** argv) {
 
     struct battery_device bat_info;
     SDL_Surface* battery_icon;
+    SDL_Surface* lightning_icon;    
     struct character_atlas* percent_atlas;
     char* font = NULL;
 
@@ -140,14 +142,20 @@ int main (int argc, char** argv) {
     CHECK_CREATE_SUCCESS(renderer);
     
 
+    LOG("INFO", "creating icon bitmaps");
     battery_icon = make_battery_icon(screen_w, screen_h);
     CHECK_CREATE_SUCCESS(battery_icon);
-    
 
-    LOG("INFO", "creating texture from icon");     
+    lightning_icon = make_lightning_icon(screen_w, screen_h);
+    CHECK_CREATE_SUCCESS(battery_icon);
+
+    LOG("INFO", "creating textures from icons");     
     SDL_Texture* battery_icon_texture = SDL_CreateTextureFromSurface(renderer, battery_icon);
     CHECK_CREATE_SUCCESS(battery_icon_texture);
     
+    SDL_Texture* lightning_icon_texture = SDL_CreateTextureFromSurface(renderer, lightning_icon);
+    CHECK_CREATE_SUCCESS(lightning_icon_texture);
+
     SDL_RenderClear(renderer);
     update_bat_info(0, &bat_info);
     
@@ -190,21 +198,25 @@ int main (int argc, char** argv) {
     SDL_Event ev;
     Uint32 start = SDL_GetTicks();
 
-    SDL_Rect* battery_area = make_battery_rect(screen_w, screen_h);
-    
-    SDL_TimerID bat_timer = SDL_AddTimer(500, update_bat_info, (void*)&bat_info);    
+    SDL_Rect battery_area = *make_battery_rect(screen_w, screen_h);
+    SDL_Rect is_charging_area = {.x=0, .y=0, .w=screen_w/4, .h=screen_w/4};
+    SDL_TimerID bat_timer = SDL_AddTimer(500, update_bat_info, (void*)&bat_info);
+
     while (running) {
         SDL_RenderCopy(renderer, battery_icon_texture, NULL, NULL);
         
         if ( !(MODE & MODE_NOTEXT) ) {
             sprintf(percent_text, "%d", bat_info.percent );
             if (percent_text[2]) {
-                character_atlas_render_string(renderer, percent_atlas, percent_text, battery_area->w * 0.8, 
-                    battery_area->w * 0.1 + battery_area->x, battery_area->y + battery_area->h/2);
+                character_atlas_render_string(renderer, percent_atlas, percent_text, battery_area.w * 0.8, 
+                    battery_area.w * 0.1 + battery_area.x, battery_area.y + battery_area.h/2);
             }else{
-                character_atlas_render_string(renderer, percent_atlas, percent_text, battery_area->w * 0.66 * 0.8, 
-                    battery_area->w * 2.33 * 0.1 + battery_area->x, battery_area->y + battery_area->h/2);  
+                character_atlas_render_string(renderer, percent_atlas, percent_text, battery_area.w * 0.66 * 0.8, 
+                    battery_area.w * 2.33 * 0.1 + battery_area.x, battery_area.y + battery_area.h/2);  
             }
+        }
+        if (bat_info.is_charging) {
+            SDL_RenderCopy(renderer, lightning_icon_texture, NULL, &is_charging_area);
         }
         SDL_RenderPresent(renderer);
         if(MODE & MODE_TEST) {
@@ -224,7 +236,7 @@ int main (int argc, char** argv) {
     if( !(MODE & MODE_NOTEXT)) {
         free_character_atlas(percent_atlas);
     }
-    free(battery_area);
+    free(&battery_area);
     SDL_DestroyTexture(battery_icon_texture);
     SDL_FreeSurface(battery_icon);
     SDL_DestroyRenderer(renderer);    
