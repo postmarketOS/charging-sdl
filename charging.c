@@ -236,7 +236,6 @@ int main (int argc, char** argv) {
     if( !(MODE & MODE_NOTEXT)) {
         free_character_atlas(percent_atlas);
     }
-    free(&battery_area);
     SDL_DestroyTexture(battery_icon_texture);
     SDL_FreeSurface(battery_icon);
     SDL_DestroyRenderer(renderer);    

@@ -1,3 +1,5 @@
 .vscode
 *.o
 charging-sdl
+charging_sdl
+vgcore.*
