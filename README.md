@@ -3,7 +3,7 @@
 This application is young! Consider it __highly__ unstable.
 
 # TODOs
-- [ ] display whether or not the device is charging
+- [x] display whether or not the device is charging
 - [ ] display charging type
 - [ ] display battery tempurature
 - [ ] hide logs with a command line flag
@@ -11,7 +11,7 @@ This application is young! Consider it __highly__ unstable.
 
 ## build
 1. `cd charging-sdl`
-2. `make`
+2. `make` or if you want fancy features `make LIBBATTERY=true`
 
 ## run
 1. build the program
@@ -19,5 +19,6 @@ This application is young! Consider it __highly__ unstable.
 
 ## usage
 - `-t` test mode (stays open until explicitly closed and is not in full screen)
-- `-n` no text (at the moment this just means it won't display battery capacity)
+- `-n` no text mode
 - `-f` font used to display all text
+- `-o` display voltage when charging (if available - see build section)
