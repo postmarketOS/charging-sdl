@@ -21,4 +21,4 @@ This application is young! Consider it __highly__ unstable.
 - `-t` test mode (stays open until explicitly closed and is not in full screen)
 - `-n` no text mode
 - `-f` font used to display all text
-- `-o` display voltage when charging (if available - see build section)
+- `-c` display current when charging (if available - see build section)
