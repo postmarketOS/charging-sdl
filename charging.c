@@ -15,7 +15,7 @@
 
 #define MODE_TEST      1
 #define MODE_NOTEXT    2
-#define MODE_VOLTAGE   4
+#define MODE_CURRENT   4
 
 #define UPTIME 5
 
@@ -24,7 +24,7 @@
     -t: launch %s in test mode\n\
     -n: don't display battery capacity\n\
     -f: font to use\n\
-    -o: attempt to get voltage\n\
+    -c: attempt to get current\n\
 ", appname, appname)
 
 #ifndef NDEBUG
@@ -43,20 +43,20 @@
     exit(1); \
 }
 struct battery_device {
-    double voltage;
+    double current;
     int    is_charging;
     int    percent;
 };
 
 Uint32 update_bat_info(Uint32 dt, void* data) {
     struct battery_device* dev = data;
-    dev->voltage = -1;
+    dev->current = -1;
     dev->percent = -1;
     dev->is_charging = 0;
 #ifdef USE_LIBBATTERY
     struct battery_info bat;
     if (battery_fill_info(&bat)) {
-        dev->voltage = bat.voltage;
+        dev->current = bat.current;
         if (!isfinite(bat.fraction)){
             dev->percent = -1;
         }else{
@@ -65,7 +65,7 @@ Uint32 update_bat_info(Uint32 dt, void* data) {
         dev->is_charging = bat.state & CHARGING;       
     }
 #else
-    dev->voltage = -1.0;
+    dev->current = -1.0;
     dev->is_charging = !(SDL_GetPowerInfo(NULL , &dev->percent) & SDL_POWERSTATE_CHARGING);
 #endif
     return dt;
@@ -90,11 +90,11 @@ int main (int argc, char** argv) {
     SDL_Rect is_charging_area = {.x=0, .y=screen_w/8 * 0.2, .w=screen_w/8, .h=screen_w/8};    
 
     char opt;
-    while ((opt = getopt(argc, argv, "tnof:")) != -1) {
+    while ((opt = getopt(argc, argv, "tncf:")) != -1) {
         switch (opt) {
         case 't': MODE |= MODE_TEST; break;
         case 'n': MODE |= MODE_NOTEXT; break;
-        case 'o': MODE |= MODE_VOLTAGE; break;
+        case 'c': MODE |= MODE_CURRENT; break;
         case 'f': font = optarg; break;
         default:
             DISPLAY_USAGE(argv[0]);
@@ -180,7 +180,7 @@ int main (int argc, char** argv) {
                 SDL_Quit();
                 exit(1);            
             }
-            percent_atlas = create_character_atlas(renderer,"0123456789v.", color, font_struct);
+            percent_atlas = create_character_atlas(renderer,"0123456789A.", color, font_struct);
             if (percent_atlas) {
                 LOG("INFO", "successfully created percent/number text atlas");
             } else {
@@ -195,7 +195,7 @@ int main (int argc, char** argv) {
         }
     }
     char percent_text[4];
-    char voltage_text[6];
+    char current_text[6];
     SDL_Rect r;
     int running = 1;
     SDL_Event ev;
@@ -218,9 +218,9 @@ int main (int argc, char** argv) {
             }
         }
         if (bat_info.is_charging) {
-            if ( !(MODE & MODE_NOTEXT) && MODE & MODE_VOLTAGE && bat_info.voltage != -1){
-                sprintf(voltage_text, "%2.1fV", bat_info.voltage );                
-                character_atlas_render_string(renderer, percent_atlas, voltage_text, is_charging_area.w * 1.2, 
+            if ( !(MODE & MODE_NOTEXT) && MODE & MODE_CURRENT && bat_info.current != -1){
+                sprintf(current_text, "%2.1fA", bat_info.current );                
+                character_atlas_render_string(renderer, percent_atlas, current_text, is_charging_area.w * 1.2, 
                     is_charging_area.w - is_charging_area.w * 0.05, is_charging_area.h + is_charging_area.h * 1.5 );  
             }
             SDL_RenderCopy(renderer, lightning_icon_texture, NULL, &is_charging_area);
