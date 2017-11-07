@@ -62,11 +62,11 @@ Uint32 update_bat_info(Uint32 dt, void* data) {
         }else{
             dev->percent = (int)(bat.fraction * 100.0);
         }
-        dev->is_charging = bat.state == CHARGING;       
+        dev->is_charging = bat.state & CHARGING;       
     }
 #else
     dev->voltage = -1.0;
-    dev->is_charging = SDL_GetPowerInfo(NULL , &dev->percent) == SDL_POWERSTATE_CHARGING;
+    dev->is_charging = !(SDL_GetPowerInfo(NULL , &dev->percent) & SDL_POWERSTATE_CHARGING);
 #endif
     return dt;
 }
@@ -180,7 +180,7 @@ int main (int argc, char** argv) {
                 SDL_Quit();
                 exit(1);            
             }
-            percent_atlas = create_character_atlas(renderer,"0123456789", color, font_struct);
+            percent_atlas = create_character_atlas(renderer,"0123456789v.", color, font_struct);
             if (percent_atlas) {
                 LOG("INFO", "successfully created percent/number text atlas");
             } else {
@@ -195,6 +195,7 @@ int main (int argc, char** argv) {
         }
     }
     char percent_text[4];
+    char voltage_text[6];
     SDL_Rect r;
     int running = 1;
     SDL_Event ev;
@@ -202,8 +203,8 @@ int main (int argc, char** argv) {
 
     SDL_Rect battery_area = *make_battery_rect(screen_w, screen_h);
     SDL_TimerID bat_timer = SDL_AddTimer(500, update_bat_info, (void*)&bat_info);
-
     while (running) {
+        SDL_RenderClear(renderer);        
         SDL_RenderCopy(renderer, battery_icon_texture, NULL, NULL);
         
         if ( !(MODE & MODE_NOTEXT) ) {
@@ -217,11 +218,16 @@ int main (int argc, char** argv) {
             }
         }
         if (bat_info.is_charging) {
+            if ( !(MODE & MODE_NOTEXT) && MODE & MODE_VOLTAGE && bat_info.voltage != -1){
+                sprintf(voltage_text, "%2.1fV", bat_info.voltage );                
+                character_atlas_render_string(renderer, percent_atlas, voltage_text, is_charging_area.w * 1.2, 
+                    is_charging_area.w - is_charging_area.w * 0.05, is_charging_area.h + is_charging_area.h * 1.5 );  
+            }
             SDL_RenderCopy(renderer, lightning_icon_texture, NULL, &is_charging_area);
         }
         SDL_RenderPresent(renderer);
         if(MODE & MODE_TEST) {
-            if (SDL_WaitEvent(&ev)) {
+            while (SDL_PollEvent(&ev)) {
                 switch (ev.type) {
                     case SDL_QUIT: running = 0; break;
                 }
