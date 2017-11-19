@@ -35,9 +35,10 @@ SDL_Surface* make_lightning_icon(int w, int h);
   get the rectangle for the batteries 'body' that fits within specific bounds
   @param w the width the battery must fit in
   @param h the height the battery must fit in
+  @param bat_rect a pointer to the rectangle to fill
   @returns returns the rectangle for the batteries body
 */
-SDL_Rect* make_battery_rect(int w, int h);
+SDL_Rect* make_battery_rect(int w, int h, SDL_Rect* bat_rect);
 
 /**
   fill_polygon fills in the space within a set of points

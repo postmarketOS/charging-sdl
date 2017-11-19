@@ -16,8 +16,7 @@ static inline void flip_coords(int * x, int * y, int * x1, int * y1) {
     *y1 = tmpy;
 }
 
-SDL_Rect* make_battery_rect(int w, int h) {
-    SDL_Rect* bat_rect = (SDL_Rect*)malloc(sizeof(SDL_Rect));
+SDL_Rect* make_battery_rect(int w, int h, SDL_Rect* bat_rect) {
     if (w > h) {
         bat_rect->h = h/1.5;
         bat_rect->w = bat_rect->h/2;
@@ -37,7 +36,8 @@ SDL_Surface* make_battery_icon(int w, int h) {
 #else
     surf = SDL_CreateRGBSurface(0, w, h, 32, 0x000000ff, 0x0000ff00, 0x00ff0000, 0xff000000);
 #endif
-    SDL_Rect bat_rect = *make_battery_rect(w, h);    
+    SDL_Rect bat_rect;
+    make_battery_rect(w, h, &bat_rect);    
 
     SDL_FillRect(surf, NULL, SDL_MapRGBA(surf->format, 0, 0, 0, 255));
     SDL_FillRect(surf, &bat_rect, SDL_MapRGBA(surf->format, 255, 255, 255, 255));

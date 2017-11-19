@@ -3,6 +3,7 @@
 void free_character_atlas (struct character_atlas* atlas) {
     free(atlas->items);
     SDL_DestroyTexture(atlas->image);
+    free(atlas);
 }
 
 struct character_atlas* create_character_atlas(SDL_Renderer* renderer, const char* characters, SDL_Color color,  TTF_Font* font) {
@@ -10,7 +11,7 @@ struct character_atlas* create_character_atlas(SDL_Renderer* renderer, const cha
 
     struct character_atlas* atlas = (struct character_atlas*)malloc(sizeof(struct character_atlas));
     atlas->items = (struct character_atlas_item*)malloc(sizeof(struct character_atlas_item) * numchars);
-    SDL_Surface** surf = (SDL_Surface**)malloc(sizeof(SDL_Surface*) * numchars);
+    SDL_Surface* surf[numchars];
     atlas->num_items = 0;
     int w = 0;
     int h = 0;
@@ -61,7 +62,7 @@ struct character_atlas* create_character_atlas(SDL_Renderer* renderer, const cha
     return atlas;
 }
 
-struct character_atlas_item* find_char (struct character_atlas* atlas, Uint16 c) {
+static inline struct character_atlas_item* find_char (struct character_atlas* atlas, Uint16 c) {
     for(int i = 0; i < atlas->num_items; ++i) {
         if (atlas->items[i].character == c) {
             return atlas->items + i;
@@ -72,7 +73,7 @@ struct character_atlas_item* find_char (struct character_atlas* atlas, Uint16 c)
 int character_atlas_render_string(SDL_Renderer* renderer,struct character_atlas* atlas, const char* str, int w, int x, int y) {
     int len = strlen(str);
     int maxy = 0;
-    struct character_atlas_item** items = (struct character_atlas_item**)malloc(sizeof(struct character_atlas_item*) * len);
+    struct character_atlas_item* items[len];
     int str_normal_width = 0;
     for(int i = 0; i < len; ++i) {
         items[i] = find_char(atlas, str[i]);
@@ -84,7 +85,6 @@ int character_atlas_render_string(SDL_Renderer* renderer,struct character_atlas*
             maxy = items[i]->bitmap.h;
         }
     }
-    
     //how much do we have to change the letter's size by?
     double str_width_factor = (double)w/(double)str_normal_width;
     SDL_Rect r;

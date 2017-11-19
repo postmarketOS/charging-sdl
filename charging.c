@@ -51,7 +51,7 @@ struct battery_device {
 
 Uint32 update_bat_info(Uint32 dt, void* data) {
     struct battery_device* dev = data;
-    dev->current = -1;
+    dev->current  = -1.0;
     dev->percent = -1;
     dev->is_charging = 0;
 #ifdef USE_LIBBATTERY
@@ -72,14 +72,14 @@ Uint32 update_bat_info(Uint32 dt, void* data) {
     return dt;
 }
 
+
 int main (int argc, char** argv) {
     LOG("INFO", "charging-sdl version %s", CHARGING_SDL_VERSION);
     
-    char flag_test, flag_percent, flag_current = 0;
+    char flag_test = 0, flag_percent = 0, flag_current = 0;
 
     int screen_w = 480;
     int screen_h = 800;
-    int battery_percent;
     
     SDL_Window* window;
     SDL_Renderer* renderer;
@@ -89,6 +89,7 @@ int main (int argc, char** argv) {
     SDL_Surface* lightning_icon;    
     struct character_atlas* percent_atlas;
     char* flag_font = NULL;
+    TTF_Font* font_struct = NULL;
 
     SDL_Rect is_charging_area = {.x=0, .y=screen_w/8 * 0.2, .w=screen_w/8, .h=screen_w/8};    
 
@@ -169,7 +170,7 @@ int main (int argc, char** argv) {
                 exit(1);          
             }
             SDL_Color color = {255, 255, 255};
-            TTF_Font* font_struct = TTF_OpenFont(flag_font, 256);
+            font_struct = TTF_OpenFont(flag_font, 256);
             if(!font_struct) {
                 ERROR("failed to open font: %s\n", TTF_GetError());
                 TTF_Quit();
@@ -190,21 +191,26 @@ int main (int argc, char** argv) {
             percent_atlas = NULL;
         }
     }
-    char percent_text[4];
-    char current_text[6];
     SDL_Rect r;
     int running = 1;
     SDL_Event ev;
     Uint32 start = SDL_GetTicks();
 
-    SDL_Rect battery_area = *make_battery_rect(screen_w, screen_h);
+    SDL_Rect battery_area;
+    make_battery_rect(screen_w, screen_h, &battery_area);
     SDL_TimerID bat_timer = SDL_AddTimer(500, update_bat_info, (void*)&bat_info);
+    
+    Uint32 start_time = 0;
+    Uint32 end_time = 0;
+    
+    char percent_text[4];
+    char current_text[6];
     while (running) {
-        SDL_RenderClear(renderer);        
+        SDL_RenderClear(renderer);
         SDL_RenderCopy(renderer, battery_icon_texture, NULL, NULL);
         
-        if (flag_percent && percent_atlas) {
-            sprintf(percent_text, "%d", bat_info.percent );
+        if (flag_percent && percent_atlas && bat_info.percent) {
+            sprintf(percent_text, "%d", bat_info.percent);  
             if (percent_text[2]) {
                 character_atlas_render_string(renderer, percent_atlas, percent_text, battery_area.w * 0.8, 
                     battery_area.w * 0.1 + battery_area.x, battery_area.y + battery_area.h/2);
@@ -214,13 +220,13 @@ int main (int argc, char** argv) {
             }
         }
         if (bat_info.is_charging) {
-            if ( flag_current && bat_info.current != -1 && percent_atlas){
-                sprintf(current_text, "%2.1fA", bat_info.current );                
-                character_atlas_render_string(renderer, percent_atlas, current_text, is_charging_area.w * 1.2, 
+            sprintf(current_text, "%2.1fA", bat_info.current);
+            if ( flag_current && bat_info.current > 0 && percent_atlas){
+                character_atlas_render_string(renderer, percent_atlas,current_text, is_charging_area.w * 1.2, 
                     is_charging_area.w - is_charging_area.w * 0.05, is_charging_area.h + is_charging_area.h * 1.5 );  
             }
             SDL_RenderCopy(renderer, lightning_icon_texture, NULL, &is_charging_area);
-        }
+        }        
         SDL_RenderPresent(renderer);
         if(flag_test) {
             while (SDL_PollEvent(&ev)) {
@@ -233,15 +239,22 @@ int main (int argc, char** argv) {
             if (SDL_GetTicks() - start >= UPTIME * 1000) {
                 running = 0;
             }
+            SDL_RenderClear(renderer);
         }
     }
 
     if(percent_atlas) free_character_atlas(percent_atlas);
-    SDL_DestroyTexture(battery_icon_texture);
+    if(font_struct) TTF_CloseFont(font_struct);
+    SDL_FreeSurface(lightning_icon);
     SDL_FreeSurface(battery_icon);
+
+    SDL_DestroyTexture(battery_icon_texture);
+    SDL_DestroyTexture(lightning_icon_texture);
+
     SDL_DestroyRenderer(renderer);    
     SDL_DestroyWindow(window);
     SDL_RemoveTimer(bat_timer);
+    if(TTF_WasInit()) TTF_Quit();
     SDL_Quit();
-    TTF_Quit();
+
 }
