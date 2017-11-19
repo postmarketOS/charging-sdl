@@ -11,20 +11,21 @@
 
 #include <atlas.h>
 #include <draw.h>
+
 #define CHARGING_SDL_VERSION "0.1.0"
 
 #define MODE_TEST      1
-#define MODE_NOTEXT    2
+#define MODE_PERCENT   2
 #define MODE_CURRENT   4
 
 #define UPTIME 5
 
 #define DISPLAY_USAGE(appname) printf(\
-"Usage: %s [-tn] [-f font]\n\
+"Usage: %s [-tpc] [-f font]\n\
     -t: launch %s in test mode\n\
-    -n: don't display battery capacity\n\
-    -f: font to use\n\
+    -p: display battery capacity\n\
     -c: attempt to get current\n\
+    -f: font to use\n\
 ", appname, appname)
 
 #ifndef NDEBUG
@@ -73,7 +74,9 @@ Uint32 update_bat_info(Uint32 dt, void* data) {
 
 int main (int argc, char** argv) {
     LOG("INFO", "charging-sdl version %s", CHARGING_SDL_VERSION);
-    unsigned MODE = 0;
+    
+    char flag_test, flag_percent, flag_current = 0;
+
     int screen_w = 480;
     int screen_h = 800;
     int battery_percent;
@@ -85,17 +88,17 @@ int main (int argc, char** argv) {
     SDL_Surface* battery_icon;
     SDL_Surface* lightning_icon;    
     struct character_atlas* percent_atlas;
-    char* font = NULL;
+    char* flag_font = NULL;
 
     SDL_Rect is_charging_area = {.x=0, .y=screen_w/8 * 0.2, .w=screen_w/8, .h=screen_w/8};    
 
     char opt;
-    while ((opt = getopt(argc, argv, "tncf:")) != -1) {
+    while ((opt = getopt(argc, argv, "tpcf:")) != -1) {
         switch (opt) {
-        case 't': MODE |= MODE_TEST; break;
-        case 'n': MODE |= MODE_NOTEXT; break;
-        case 'c': MODE |= MODE_CURRENT; break;
-        case 'f': font = optarg; break;
+        case 't': flag_test = 1; break;
+        case 'p': flag_percent = 1; break;
+        case 'c': flag_current = 1; break;
+        case 'f': flag_font = optarg; break;
         default:
             DISPLAY_USAGE(argv[0]);
             exit(1);
@@ -105,12 +108,7 @@ int main (int argc, char** argv) {
         ERROR("failed to init SDL: %s", SDL_GetError());  
         exit(1);        
     }
-    if ( !(MODE & MODE_NOTEXT) )  {
-        if(font == NULL) {
-            ERROR("no font set and no text mode has not been turned on");
-            SDL_Quit();
-            exit(1);
-        }
+    if ((flag_percent || flag_current) && flag_font)  {
         if (TTF_Init() < 0) {
             ERROR("failed to init SDL: %s", TTF_GetError());
             SDL_Quit();            
@@ -118,7 +116,7 @@ int main (int argc, char** argv) {
         }
     }
 
-    if (MODE & MODE_TEST) {
+    if (flag_test) {
         LOG("INFO", "creating test window");
         window = SDL_CreateWindow("Charge - Test Mode", 
                                     SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 
@@ -161,19 +159,17 @@ int main (int argc, char** argv) {
     SDL_RenderClear(renderer);
     update_bat_info(0, &bat_info);
     
-    if (!(MODE & MODE_NOTEXT)) {
-        if ( bat_info.percent >= 0 && bat_info.percent <= 100) {
-            LOG("INFO", "able to access battery");
-            LOG("INFO", "current capacity: %d%%", bat_info.percent );
-            LOG("INFO", "using font %s", font);
-            if (font == NULL) {
+    if (flag_percent || flag_current) {
+        if (flag_font) {
+            LOG("INFO", "using font %s", flag_font);
+            if (flag_font == NULL) {
                 ERROR("no font specified");
                 TTF_Quit();
                 SDL_Quit();  
                 exit(1);          
             }
             SDL_Color color = {255, 255, 255};
-            TTF_Font* font_struct = TTF_OpenFont(font, 256);
+            TTF_Font* font_struct = TTF_OpenFont(flag_font, 256);
             if(!font_struct) {
                 ERROR("failed to open font: %s\n", TTF_GetError());
                 TTF_Quit();
@@ -190,8 +186,8 @@ int main (int argc, char** argv) {
                 exit(1);     
             }
         } else {
-            LOG("WARNING", "unable to access battery, turning on no text mode");
-            MODE |= MODE_NOTEXT;
+            LOG("WARNING", "no font set, turning off text renderering");
+            percent_atlas = NULL;
         }
     }
     char percent_text[4];
@@ -207,7 +203,7 @@ int main (int argc, char** argv) {
         SDL_RenderClear(renderer);        
         SDL_RenderCopy(renderer, battery_icon_texture, NULL, NULL);
         
-        if ( !(MODE & MODE_NOTEXT) ) {
+        if (flag_percent && percent_atlas) {
             sprintf(percent_text, "%d", bat_info.percent );
             if (percent_text[2]) {
                 character_atlas_render_string(renderer, percent_atlas, percent_text, battery_area.w * 0.8, 
@@ -218,7 +214,7 @@ int main (int argc, char** argv) {
             }
         }
         if (bat_info.is_charging) {
-            if ( !(MODE & MODE_NOTEXT) && MODE & MODE_CURRENT && bat_info.current != -1){
+            if ( flag_current && bat_info.current != -1 && percent_atlas){
                 sprintf(current_text, "%2.1fA", bat_info.current );                
                 character_atlas_render_string(renderer, percent_atlas, current_text, is_charging_area.w * 1.2, 
                     is_charging_area.w - is_charging_area.w * 0.05, is_charging_area.h + is_charging_area.h * 1.5 );  
@@ -226,7 +222,7 @@ int main (int argc, char** argv) {
             SDL_RenderCopy(renderer, lightning_icon_texture, NULL, &is_charging_area);
         }
         SDL_RenderPresent(renderer);
-        if(MODE & MODE_TEST) {
+        if(flag_test) {
             while (SDL_PollEvent(&ev)) {
                 switch (ev.type) {
                     case SDL_QUIT: running = 0; break;
@@ -240,9 +236,7 @@ int main (int argc, char** argv) {
         }
     }
 
-    if( !(MODE & MODE_NOTEXT)) {
-        free_character_atlas(percent_atlas);
-    }
+    if(percent_atlas) free_character_atlas(percent_atlas);
     SDL_DestroyTexture(battery_icon_texture);
     SDL_FreeSurface(battery_icon);
     SDL_DestroyRenderer(renderer);    

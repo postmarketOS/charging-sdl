@@ -1,6 +1,10 @@
 #include <draw.h>
 
-#define FETCH_PIXEL32(surf, x, y) ((Uint32*) ((Uint8*)surf->pixels + (y * surf->w + x) * 4))
+#define FETCH_PIXEL(s, x, y) ((Uint32*) ((Uint8*) (s)->pixels + ( (y) * (s)->w + (x) ) * ((s)->format->BytesPerPixel)))
+
+static inline Uint32* fetch_pixel(SDL_Surface* surf, int x, int y) {
+    return ((Uint32*) ((Uint8*)surf->pixels + ( y * surf->w + x ) * surf->format->BytesPerPixel));
+}
 static inline void flip_coords(int * x, int * y, int * x1, int * y1) {
     int tmpx = *x;
     int tmpy = *y;
@@ -11,6 +15,7 @@ static inline void flip_coords(int * x, int * y, int * x1, int * y1) {
     *x1 = tmpx;
     *y1 = tmpy;
 }
+
 SDL_Rect* make_battery_rect(int w, int h) {
     SDL_Rect* bat_rect = (SDL_Rect*)malloc(sizeof(SDL_Rect));
     if (w > h) {
@@ -102,8 +107,8 @@ int draw_line(SDL_Surface* surf, Uint32 c, int x, int y, int x1, int y1) {
     double change_x = (x1-x)/(double)steps;
     double change_y = (y1-y)/(double)steps;
     for( int i = 0; i < steps; ++i ){
-        cur_pix = (Uint32*) ((Uint8*)surf->pixels + ((long)cur_y * surf->w + (long)cur_x) * 4);
-        *cur_pix = c;
+        cur_pix = FETCH_PIXEL(surf, (int)cur_x, (int)cur_y);
+        (*cur_pix) = c;
         
         cur_x += change_x;
         cur_y += change_y;
@@ -134,20 +139,20 @@ int fill_polygon(SDL_Surface* surf, Uint32 color, SDL_Point * points, int numpoi
     for (int y = min_y; y < max_y; ++y) {
         flip = 0;    
         for(int x = min_x; x < max_x; ++x){
-            pix = FETCH_PIXEL32(surf, x, y);
+            pix = FETCH_PIXEL(surf, x, y);
             if (*pix == color) {
                 flip += 1;
-                pix = FETCH_PIXEL32(surf, ++x, y);                
+                pix = FETCH_PIXEL(surf, ++x, y);                
                 while (*pix == color) {
-                    pix = FETCH_PIXEL32(surf, ++x, y);                
+                    pix = FETCH_PIXEL(surf, ++x, y);                
                 }
                 int dx = x;
                 while (*pix != color) {
                     if(dx >= max_x) break;
-                    pix = FETCH_PIXEL32(surf, ++dx, y);                    
+                    pix = FETCH_PIXEL(surf, ++dx, y);                    
                 }
                 if(dx >= max_x) break;
-                else pix = FETCH_PIXEL32(surf, x, y);
+                else pix = FETCH_PIXEL(surf, x, y);
                           
             }
             
