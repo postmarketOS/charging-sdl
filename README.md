@@ -1,24 +1,29 @@
 # charging-sdl
-"charge required" screen for pmOS.
-This application is young! Consider it __highly__ unstable.
 
-# TODOs
+"charge required" screen for pmOS.
+This application is new(ish) so it's a bit unstable.
+
+## TODOs
+
 - [x] display whether or not the device is charging
+- [ ] speed up the font atlas rendering
 - [ ] display charging type
-- [ ] display battery tempurature
-- [ ] hide logs with a command line flag
-- [ ] maybe add a config file
+- [ ] display battery temperature
+- [ ] show battery voltage
 
 ## build
+
 1. `cd charging-sdl`
 2. `make` or if you want fancy features `make LIBBATTERY=true`
 
 ## run
-1. build the program
-2. `./charging_sdl -tn`
+
+- without text `$./charging_sdl -t`
+- with text `$charging_sdl -tpcf path/to/font`
 
 ## usage
-- `-t` test mode (stays open until explicitly closed and is not in full screen)
-- `-n` no text mode
-- `-f` font used to display all text
+
+- `-t` test mode, keep the application open until explicitly closed and is not in full screen
+- `-p` display the percent charged the battery is
 - `-c` display current when charging (if available - see build section)
+- `-f` font used to display all text
