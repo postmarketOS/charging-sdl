@@ -18,8 +18,8 @@ This application is new(ish) so it's a bit unstable.
 
 ## run
 
-- without text `$./charging_sdl -t`
-- with text `$charging_sdl -tpcf path/to/font`
+- without text `./charging_sdl -t`
+- with text `./charging_sdl -tpcf path/to/font`
 
 ## usage
 
