@@ -15,7 +15,7 @@ This application is young! Consider it __highly__ unstable.
 
 ## run
 1. build the program
-2. `./charge -tn`
+2. `./charging_sdl -tn`
 
 ## usage
 - `-t` test mode (stays open until explicitly closed and is not in full screen)
