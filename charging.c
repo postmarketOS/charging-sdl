@@ -14,10 +14,6 @@
 
 #define CHARGING_SDL_VERSION "0.1.0"
 
-#define MODE_TEST      1
-#define MODE_PERCENT   2
-#define MODE_CURRENT   4
-
 #define UPTIME 5
 
 #define DISPLAY_USAGE(appname) printf(\
@@ -44,16 +40,16 @@
     exit(1); \
 }
 struct battery_device {
-    double current;
-    int    is_charging;
-    int    percent;
+    double     current;
+    int        is_charging;
+    int        percent;
+
+    SDL_mutex* mut;
 };
 
 Uint32 update_bat_info(Uint32 dt, void* data) {
     struct battery_device* dev = data;
-    dev->current  = -1.0;
-    dev->percent = -1;
-    dev->is_charging = 0;
+    SDL_LockMutex(dev->mut);
 #ifdef USE_LIBBATTERY
     struct battery_info bat;
     if (battery_fill_info(&bat)) {
@@ -66,9 +62,16 @@ Uint32 update_bat_info(Uint32 dt, void* data) {
         dev->is_charging = bat.state & CHARGING;       
     }
 #else
-    dev->current = -1.0;
-    dev->is_charging = !(SDL_GetPowerInfo(NULL , &dev->percent) & SDL_POWERSTATE_CHARGING);
+    SDL_PowerState state = SDL_GetPowerInfo(NULL, NULL);
+    
+    if ( !(state & SDL_POWERSTATE_UNKNOWN) ){
+        SDL_GetPowerInfo(NULL, &dev->percent);
+        if( state & SDL_POWERSTATE_CHARGING ) {
+            dev->is_charging = 1;
+        }
+    }
 #endif
+    SDL_UnlockMutex(dev->mut);
     return dt;
 }
 
@@ -90,9 +93,9 @@ int main (int argc, char** argv) {
     struct character_atlas* percent_atlas;
     char* flag_font = NULL;
     TTF_Font* font_struct = NULL;
+    SDL_mutex* render_mutex = NULL;
 
     SDL_Rect is_charging_area = {.x=0, .y=screen_w/8 * 0.2, .w=screen_w/8, .h=screen_w/8};    
-
     char opt;
     while ((opt = getopt(argc, argv, "tpcf:")) != -1) {
         switch (opt) {
@@ -158,7 +161,6 @@ int main (int argc, char** argv) {
     CHECK_CREATE_SUCCESS(lightning_icon_texture);
 
     SDL_RenderClear(renderer);
-    update_bat_info(0, &bat_info);
     
     if (flag_percent || flag_current) {
         if (flag_font) {
@@ -197,7 +199,19 @@ int main (int argc, char** argv) {
     Uint32 start = SDL_GetTicks();
 
     SDL_Rect battery_area;
+
+    render_mutex = SDL_CreateMutex();
+    CHECK_CREATE_SUCCESS(render_mutex);
+
     make_battery_rect(screen_w, screen_h, &battery_area);
+    bat_info.current = -1.0f;
+    bat_info.is_charging = 0;
+    bat_info.percent = -1;
+    bat_info.mut = render_mutex;
+
+    update_bat_info(-1, (void*)&bat_info);
+
+
     SDL_TimerID bat_timer = SDL_AddTimer(500, update_bat_info, (void*)&bat_info);
     
     Uint32 start_time = 0;
@@ -209,8 +223,10 @@ int main (int argc, char** argv) {
         SDL_RenderClear(renderer);
         SDL_RenderCopy(renderer, battery_icon_texture, NULL, NULL);
         
-        if (flag_percent && percent_atlas && bat_info.percent) {
-            sprintf(percent_text, "%d", bat_info.percent);  
+        SDL_LockMutex(render_mutex);
+        printf("%d\n",bat_info.percent);
+        if (flag_percent && percent_atlas && bat_info.percent > 0) {
+            sprintf(percent_text, "%d", bat_info.percent);
             if (percent_text[2]) {
                 character_atlas_render_string(renderer, percent_atlas, percent_text, battery_area.w * 0.8, 
                     battery_area.w * 0.1 + battery_area.x, battery_area.y + battery_area.h/2);
@@ -226,8 +242,9 @@ int main (int argc, char** argv) {
                     is_charging_area.w - is_charging_area.w * 0.05, is_charging_area.h + is_charging_area.h * 1.5 );  
             }
             SDL_RenderCopy(renderer, lightning_icon_texture, NULL, &is_charging_area);
-        }        
+        }     
         SDL_RenderPresent(renderer);
+        SDL_UnlockMutex(render_mutex);
         if(flag_test) {
             while (SDL_PollEvent(&ev)) {
                 switch (ev.type) {
@@ -254,6 +271,7 @@ int main (int argc, char** argv) {
     SDL_DestroyRenderer(renderer);    
     SDL_DestroyWindow(window);
     SDL_RemoveTimer(bat_timer);
+    SDL_DestroyMutex(render_mutex);
     if(TTF_WasInit()) TTF_Quit();
     SDL_Quit();
 
