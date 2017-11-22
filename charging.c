@@ -43,13 +43,9 @@ struct battery_device {
     double     current;
     int        is_charging;
     int        percent;
-
-    SDL_mutex* mut;
 };
 
-Uint32 update_bat_info(Uint32 dt, void* data) {
-    struct battery_device* dev = data;
-    SDL_LockMutex(dev->mut);
+void update_bat_info(struct battery_device* dev) {
 #ifdef USE_LIBBATTERY
     struct battery_info bat;
     if (battery_fill_info(&bat)) {
@@ -66,13 +62,9 @@ Uint32 update_bat_info(Uint32 dt, void* data) {
     
     if ( !(state & SDL_POWERSTATE_UNKNOWN) ){
         SDL_GetPowerInfo(NULL, &dev->percent);
-        if( state & SDL_POWERSTATE_CHARGING ) {
-            dev->is_charging = 1;
-        }
+        dev->is_charging = !(state & SDL_POWERSTATE_CHARGING);
     }
 #endif
-    SDL_UnlockMutex(dev->mut);
-    return dt;
 }
 
 
@@ -90,10 +82,9 @@ int main (int argc, char** argv) {
     struct battery_device bat_info;
     SDL_Surface* battery_icon;
     SDL_Surface* lightning_icon;    
-    struct character_atlas* percent_atlas;
+    struct character_atlas* percent_atlas = NULL;
     char* flag_font = NULL;
     TTF_Font* font_struct = NULL;
-    SDL_mutex* render_mutex = NULL;
 
     SDL_Rect is_charging_area = {.x=0, .y=screen_w/8 * 0.2, .w=screen_w/8, .h=screen_w/8};    
     char opt;
@@ -108,7 +99,7 @@ int main (int argc, char** argv) {
             exit(1);
         }
     }
-    if (SDL_Init(SDL_INIT_EVENTS | SDL_INIT_VIDEO | SDL_INIT_TIMER) < 0) {
+    if (SDL_Init(SDL_INIT_EVENTS | SDL_INIT_VIDEO) < 0) {
         ERROR("failed to init SDL: %s", SDL_GetError());  
         exit(1);        
     }
@@ -200,19 +191,10 @@ int main (int argc, char** argv) {
 
     SDL_Rect battery_area;
 
-    render_mutex = SDL_CreateMutex();
-    CHECK_CREATE_SUCCESS(render_mutex);
-
     make_battery_rect(screen_w, screen_h, &battery_area);
     bat_info.current = -1.0f;
     bat_info.is_charging = 0;
     bat_info.percent = -1;
-    bat_info.mut = render_mutex;
-
-    update_bat_info(-1, (void*)&bat_info);
-
-
-    SDL_TimerID bat_timer = SDL_AddTimer(500, update_bat_info, (void*)&bat_info);
     
     Uint32 start_time = 0;
     Uint32 end_time = 0;
@@ -221,10 +203,11 @@ int main (int argc, char** argv) {
     char current_text[6];
     while (running) {
         SDL_RenderClear(renderer);
+        
+        update_bat_info(&bat_info);
+
         SDL_RenderCopy(renderer, battery_icon_texture, NULL, NULL);
         
-        SDL_LockMutex(render_mutex);
-        printf("%d\n",bat_info.percent);
         if (flag_percent && percent_atlas && bat_info.percent > 0) {
             sprintf(percent_text, "%d", bat_info.percent);
             if (percent_text[2]) {
@@ -244,7 +227,6 @@ int main (int argc, char** argv) {
             SDL_RenderCopy(renderer, lightning_icon_texture, NULL, &is_charging_area);
         }     
         SDL_RenderPresent(renderer);
-        SDL_UnlockMutex(render_mutex);
         if(flag_test) {
             while (SDL_PollEvent(&ev)) {
                 switch (ev.type) {
@@ -270,8 +252,6 @@ int main (int argc, char** argv) {
 
     SDL_DestroyRenderer(renderer);    
     SDL_DestroyWindow(window);
-    SDL_RemoveTimer(bat_timer);
-    SDL_DestroyMutex(render_mutex);
     if(TTF_WasInit()) TTF_Quit();
     SDL_Quit();
 
