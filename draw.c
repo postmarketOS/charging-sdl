@@ -25,7 +25,7 @@ SDL_Rect* make_battery_rect(int w, int h, SDL_Rect* bat_rect) {
         bat_rect->h = bat_rect->w*2;
     }
     bat_rect->x = (w - bat_rect->w) / 2;
-    bat_rect->y = (h - bat_rect->h) / 2;  
+    bat_rect->y = (h - bat_rect->h) / 2;
     return bat_rect;
 }
 
@@ -37,13 +37,13 @@ SDL_Surface* make_battery_icon(int w, int h) {
     surf = SDL_CreateRGBSurface(0, w, h, 32, 0x000000ff, 0x0000ff00, 0x00ff0000, 0xff000000);
 #endif
     SDL_Rect bat_rect;
-    make_battery_rect(w, h, &bat_rect);    
+    make_battery_rect(w, h, &bat_rect);
 
     SDL_FillRect(surf, NULL, SDL_MapRGBA(surf->format, 0, 0, 0, 255));
     SDL_FillRect(surf, &bat_rect, SDL_MapRGBA(surf->format, 255, 255, 255, 255));
 
     int margin = bat_rect.h * 0.05;
-    
+
     bat_rect.x += bat_rect.h * 0.05;
     bat_rect.y += bat_rect.h * 0.05;
     bat_rect.w -= bat_rect.h * 0.1;
@@ -51,16 +51,16 @@ SDL_Surface* make_battery_icon(int w, int h) {
     SDL_FillRect(surf, &bat_rect, SDL_MapRGBA(surf->format, 0, 0, 0, 255));
 
     bat_rect.y += bat_rect.h * 0.9;
-    bat_rect.h = bat_rect.h * 0.1;    
+    bat_rect.h = bat_rect.h * 0.1;
     SDL_FillRect(surf, &bat_rect, SDL_MapRGBA(surf->format, 255, 0, 0, 255));
-    
+
     bat_rect.y -= bat_rect.h * 10.5;
     bat_rect.x += bat_rect.w * 0.2;
 
     bat_rect.w -= bat_rect.w * 0.4;
     SDL_FillRect(surf, &bat_rect, SDL_MapRGBA(surf->format, 255, 255, 255, 255));
     return surf;
-}    
+}
 SDL_Surface* make_lightning_icon(int w, int h){
     SDL_Surface* surf;
 #if SDL_BYTEORDER == SDL_BIG_ENDIAN
@@ -82,9 +82,9 @@ SDL_Surface* make_lightning_icon(int w, int h){
         {offset_x + w * 0.3, h},
         {offset_x + w * 0.8, h/3},
         {offset_x + w * 0.6, h/3},
-        {offset_x + w * 0.8, 0},          
+        {offset_x + w * 0.8, 0},
     };
-    
+
     fill_polygon(surf, SDL_MapRGBA(surf->format, 255, 255, 255, 255), outline, 7);
     return surf;
 }
@@ -109,7 +109,7 @@ int draw_line(SDL_Surface* surf, Uint32 c, int x, int y, int x1, int y1) {
     for( int i = 0; i < steps; ++i ){
         cur_pix = FETCH_PIXEL(surf, (int)cur_x, (int)cur_y);
         (*cur_pix) = c;
-        
+
         cur_x += change_x;
         cur_y += change_y;
     }
@@ -129,7 +129,7 @@ int fill_polygon(SDL_Surface* surf, Uint32 color, SDL_Point * points, int numpoi
         if (points[l].y < min_y) min_y = points[l].y;
 
         if (l != numpoints-1) {
-            if (draw_line(surf, color, points[l].x, points[l].y, points[l+1].x, points[l+1].y)) return 1;            
+            if (draw_line(surf, color, points[l].x, points[l].y, points[l+1].x, points[l+1].y)) return 1;
         }else{
             if (draw_line(surf, color, points[l].x, points[l].y, points[0].x, points[0].y)) return 1;
         }
@@ -137,25 +137,25 @@ int fill_polygon(SDL_Surface* surf, Uint32 color, SDL_Point * points, int numpoi
     int flip = 0;
     Uint32* pix;
     for (int y = min_y; y < max_y; ++y) {
-        flip = 0;    
+        flip = 0;
         for(int x = min_x; x < max_x; ++x){
             pix = FETCH_PIXEL(surf, x, y);
             if (*pix == color) {
                 flip += 1;
-                pix = FETCH_PIXEL(surf, ++x, y);                
+                pix = FETCH_PIXEL(surf, ++x, y);
                 while (*pix == color) {
-                    pix = FETCH_PIXEL(surf, ++x, y);                
+                    pix = FETCH_PIXEL(surf, ++x, y);
                 }
                 int dx = x;
                 while (*pix != color) {
                     if(dx >= max_x) break;
-                    pix = FETCH_PIXEL(surf, ++dx, y);                    
+                    pix = FETCH_PIXEL(surf, ++dx, y);
                 }
                 if(dx >= max_x) break;
                 else pix = FETCH_PIXEL(surf, x, y);
-                          
+
             }
-            
+
             if (flip % 2 != 0) *pix = color;
         }
     }

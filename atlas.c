@@ -26,7 +26,7 @@ struct character_atlas* create_character_atlas(SDL_Renderer* renderer, const cha
         atlas->items[i].bitmap.y = 0;
         atlas->items[i].bitmap.w = surf[i]->w;
         atlas->items[i].bitmap.h = surf[i]->h;
-        
+
         atlas->items[i].character = characters[i];
         TTF_GlyphMetrics(font, characters[i], &atlas->items[i].metrics.minx,
             &atlas->items[i].metrics.maxx,  &atlas->items[i].metrics.miny,
@@ -38,7 +38,7 @@ struct character_atlas* create_character_atlas(SDL_Renderer* renderer, const cha
         }
         atlas->num_items++;
     }
-    
+
     SDL_Surface* all_in_one;
 #if SDL_BYTEORDER == SDL_BIG_ENDIAN
     all_in_one = SDL_CreateRGBSurface(0, w, h, 32, 0xff000000, 0x00ff0000, 0x0000ff00, 0x000000ff);
@@ -93,7 +93,7 @@ int character_atlas_render_string(SDL_Renderer* renderer,struct character_atlas*
     for(int i = 0; i < len; ++i) {
         r.w = items[i]->bitmap.w * str_width_factor;
         r.h = items[i]->bitmap.h * str_width_factor;
-        
+
         SDL_RenderCopy(renderer, atlas->image, &items[i]->bitmap, &r);
         r.x += items[i]->metrics.advance * str_width_factor;
     }
