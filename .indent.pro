@@ -1,0 +1,12 @@
+--original
+-kr
+--dont-format-first-column-comments
+--no-blank-lines-after-commas
+--indent-level 4
+--line-length 185
+--comment-delimiters-on-blank-lines
+--braces-on-if-line
+--blank-lines-after-declarations
+--blank-lines-after-procedures
+--start-left-side-of-comments
+--braces-on-func-def-line
