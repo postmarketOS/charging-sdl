@@ -3,3 +3,4 @@
 charging-sdl
 charging_sdl
 vgcore.*
+callgrind.*

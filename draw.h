@@ -13,7 +13,7 @@
   @param x1 x position of the ending point
   @param y1 y position of the ending point
 */
-int draw_line(SDL_Surface* surf, Uint32 c, int x, int y, int x1, int y1);  
+int draw_line(SDL_Surface* surf, Uint32 c, int x, int y, int x1, int y1);
 
 /**
   create a battery icon to fit within a specific area
@@ -21,7 +21,7 @@ int draw_line(SDL_Surface* surf, Uint32 c, int x, int y, int x1, int y1);
   @param h the height the battery must fit in
   @returns returns a battery icon, its surface's width and height are equal to w and h
 */
-SDL_Surface* make_battery_icon(int w, int h);    
+SDL_Surface* make_battery_icon(int w, int h);
 
 /**
   create a lightning bolt icon, the icon will fit within w and h without being stretched
@@ -35,9 +35,10 @@ SDL_Surface* make_lightning_icon(int w, int h);
   get the rectangle for the batteries 'body' that fits within specific bounds
   @param w the width the battery must fit in
   @param h the height the battery must fit in
+  @param bat_rect a pointer to the rectangle to fill
   @returns returns the rectangle for the batteries body
 */
-SDL_Rect* make_battery_rect(int w, int h);
+SDL_Rect* make_battery_rect(int w, int h, SDL_Rect* bat_rect);
 
 /**
   fill_polygon fills in the space within a set of points
