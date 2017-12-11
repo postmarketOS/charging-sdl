@@ -43,7 +43,8 @@ void free_character_atlas (struct character_atlas* atlas);
   @param color the color of the glyphs (the background of each glyph is transparent)
   @param font the font used to draw the characters
 */
-struct character_atlas* create_character_atlas(SDL_Renderer* renderer, const char* characters, SDL_Color color,  TTF_Font* font);
+struct character_atlas* create_character_atlas(SDL_Renderer* renderer, const char* characters,
+                                               SDL_Color color,  TTF_Font* font);
 
 /**
   renderer a string using characters from an atlas
@@ -52,5 +53,6 @@ struct character_atlas* create_character_atlas(SDL_Renderer* renderer, const cha
   @param color the color of the glyphs (the background of each glyph is transparent)
   @param font the font used to draw the characters
 */
-int character_atlas_render_string(SDL_Renderer* renderer,struct character_atlas* atlas, const char* str, int w, int x, int y);
+int character_atlas_render_string(SDL_Renderer* renderer, struct character_atlas* atlas,
+                                  const char* str, int w, int x, int y);
 #endif
