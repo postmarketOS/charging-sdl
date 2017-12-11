@@ -1,0 +1,6 @@
+#!/bin/bash
+
+set -e
+dir=$HOME/nsiqcppstyle
+
+git clone https://github.com/craftyguy/nsiqcppstyle.git $dir

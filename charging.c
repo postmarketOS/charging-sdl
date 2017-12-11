@@ -16,16 +16,16 @@
 
 #define UPTIME 5
 
-#define DISPLAY_USAGE(appname) printf(\
-"Usage: %s [-tpc] [-f font]\n\
+void usage(char* appname)  {
+    printf("Usage: %s [-tpc] [-f font]\n\
     -t: launch %s in test mode\n\
     -p: display battery capacity\n\
     -c: attempt to get current\n\
-    -f: font to use\n\
-", appname, appname)
+    -f: font to use\n", appname, appname);
+}
 
 #ifndef NDEBUG
-    #define LOG(status, msg, ...) printf("[%s] ",status); printf(msg, ##__VA_ARGS__); printf("\n")
+    #define LOG(status, msg, ...) printf("[%s] ", status); printf(msg, ##__VA_ARGS__); printf("\n")
     #define ERROR(msg, ...) LOG("ERROR", msg, ##__VA_ARGS__)
 #else
     #define LOG(status, msg, ...)
@@ -86,18 +86,23 @@ int main (int argc, char** argv) {
     char* flag_font = NULL;
     TTF_Font* font_struct = NULL;
 
-    SDL_Rect is_charging_area = {.x=0, .y=screen_w/8 * 0.2, .w=screen_w/8, .h=screen_w/8};
+    SDL_Rect is_charging_area = {
+        .x = 0,
+        .y = screen_w / 8 * 0.2,
+        .w = screen_w / 8,
+        .h = screen_w / 8
+    };
     char opt;
     while ((opt = getopt(argc, argv, "tpcf:")) != -1) {
         switch (opt) {
-        case 't': flag_test = 1; break;
-        case 'p': flag_percent = 1; break;
-        case 'c': flag_current = 1; break;
-        case 'f': flag_font = optarg; break;
-        default:
-            DISPLAY_USAGE(argv[0]);
-            exit(1);
-        }
+            case 't': flag_test = 1; break;
+            case 'p': flag_percent = 1; break;
+            case 'c': flag_current = 1; break;
+            case 'f': flag_font = optarg; break;
+            default:
+                usage(argv[0]);
+                exit(1);
+            }
     }
     if (SDL_Init(SDL_INIT_EVENTS | SDL_INIT_VIDEO) < 0) {
         ERROR("failed to init SDL: %s", SDL_GetError());
@@ -170,7 +175,7 @@ int main (int argc, char** argv) {
                 SDL_Quit();
                 exit(1);
             }
-            percent_atlas = create_character_atlas(renderer,"0123456789A.", color, font_struct);
+            percent_atlas = create_character_atlas(renderer, "0123456789A.", color, font_struct);
             if (percent_atlas) {
                 LOG("INFO", "successfully created percent/number text atlas");
             } else {
@@ -211,17 +216,21 @@ int main (int argc, char** argv) {
         if (flag_percent && percent_atlas && bat_info.percent > 0) {
             sprintf(percent_text, "%d", bat_info.percent);
             if (percent_text[2]) {
-                character_atlas_render_string(renderer, percent_atlas, percent_text, battery_area.w * 0.8,
-                    battery_area.w * 0.1 + battery_area.x, battery_area.y + battery_area.h/2);
+                character_atlas_render_string(renderer, percent_atlas, percent_text,
+                                              battery_area.w * 0.8,
+                                              battery_area.w * 0.1 + battery_area.x,
+                                              battery_area.y + battery_area.h / 2);
             }else{
-                character_atlas_render_string(renderer, percent_atlas, percent_text, battery_area.w * 0.66 * 0.8,
-                    battery_area.w * 2.33 * 0.1 + battery_area.x, battery_area.y + battery_area.h/2);
+                character_atlas_render_string(renderer, percent_atlas, percent_text,
+                                              battery_area.w * 0.66 * 0.8,
+                                              battery_area.w * 2.33 * 0.1 + battery_area.x,
+                                              battery_area.y + battery_area.h / 2);
             }
         }
         if (bat_info.is_charging) {
             sprintf(current_text, "%2.1fA", bat_info.current);
             if ( flag_current && bat_info.current > 0 && percent_atlas){
-                character_atlas_render_string(renderer, percent_atlas,current_text, is_charging_area.w * 1.2,
+                character_atlas_render_string(renderer, percent_atlas, current_text, is_charging_area.w * 1.2,
                     is_charging_area.w - is_charging_area.w * 0.05, is_charging_area.h + is_charging_area.h * 1.5 );
             }
             SDL_RenderCopy(renderer, lightning_icon_texture, NULL, &is_charging_area);
