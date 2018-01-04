@@ -86,12 +86,6 @@ int main (int argc, char** argv) {
     char* flag_font = NULL;
     TTF_Font* font_struct = NULL;
 
-    SDL_Rect is_charging_area = {
-        .x = 0,
-        .y = screen_w / 8 * 0.2,
-        .w = screen_w / 8,
-        .h = screen_w / 8
-    };
     int opt;
     while ((opt = getopt(argc, argv, "tpcf:")) != -1) {
         switch (opt) {
@@ -141,10 +135,16 @@ int main (int argc, char** argv) {
     renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_SOFTWARE);
     CHECK_CREATE_SUCCESS(renderer);
 
-
     LOG("INFO", "creating icon bitmaps");
     battery_icon = make_battery_icon(screen_w, screen_h);
     CHECK_CREATE_SUCCESS(battery_icon);
+    
+    SDL_Rect is_charging_area = {
+        .x = 0,
+        .y = screen_w / 8 * 0.2,
+        .w = screen_w / 8,
+        .h = screen_w / 8
+    };
 
     lightning_icon = make_lightning_icon(is_charging_area.w, is_charging_area.h);
     CHECK_CREATE_SUCCESS(battery_icon);
