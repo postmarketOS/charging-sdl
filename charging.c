@@ -92,7 +92,7 @@ int main (int argc, char** argv) {
         .w = screen_w / 8,
         .h = screen_w / 8
     };
-    char opt;
+    int opt;
     while ((opt = getopt(argc, argv, "tpcf:")) != -1) {
         switch (opt) {
             case 't': flag_test = 1; break;
