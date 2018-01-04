@@ -1,8 +1,10 @@
 # charging-sdl
 
+[![build status](https://travis-ci.org/postmarketOS/charging-sdl.svg?branch=master)](https://travis-ci.org/postmarketOS/charging-sdl)
+
 Charging screen for the initramfs.
 
-![](https://wiki.postmarketos.org/images/d/d8/Charging-sdl.jpg)
+![photo](https://wiki.postmarketos.org/images/d/d8/Charging-sdl.jpg)
 
 
 
