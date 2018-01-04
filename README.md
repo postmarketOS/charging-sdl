@@ -1,7 +1,10 @@
 # charging-sdl
 
-"charge required" screen for pmOS.
-This application is new(ish) so it's a bit unstable.
+Charging screen for the initramfs.
+
+![](https://wiki.postmarketos.org/images/d/d8/Charging-sdl.jpg)
+
+
 
 ## TODOs
 
