@@ -84,6 +84,18 @@ SDL_Surface* make_lightning_icon(int w, int h){
     return surf;
 }
 
+SDL_Rect* make_oled_rect(int h, SDL_Rect* oled_rect) {
+    unsigned int a = h / 25;
+    oled_rect->w = a;
+    oled_rect->h = a;
+    return oled_rect;
+}
+
+void move_oled_rect(int w, int h, SDL_Rect* rect) {
+    rect->x = rand() % (w / 2 - rect->w + 1);
+    rect->y = rand() % (h / 2 - rect->h + 1);
+}
+
 int draw_line(SDL_Surface* surf, Uint32 c, int x, int y, int x1, int y1) {
     if ( (x > x1 && y >= y1) || (y > y1 && x < x1)) {
         flip_coords(&x, &y, &x1, &y1);
