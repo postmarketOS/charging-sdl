@@ -40,6 +40,23 @@ SDL_Surface* make_lightning_icon(int w, int h);
 */
 SDL_Rect* make_battery_rect(int w, int h, SDL_Rect* bat_rect);
 
+#ifdef OLED_SCREEN
+/**
+  create a small square, that will move around the screen, to prevent burn-in's
+  @param h the height of the screen
+  @param oled_rect a pointer to the rectangle to fill
+  @returns returns a square, its side length's equal to the height divided by 25
+*/
+SDL_Rect* make_oled_rect(int h, SDL_Rect* oled_rect);
+/**
+  place the burn-in prevention square to a random place within the screen
+  @param w the width of the screen
+  @param h the height of the screen
+  @param rect a pointer to the rectangle to move
+*/
+void move_oled_rect(int w, int h, SDL_Rect* rect);
+
+#endif
 /**
   fill_polygon fills in the space within a set of points
   @parma surf the surface to draw on

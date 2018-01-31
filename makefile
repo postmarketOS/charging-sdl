@@ -13,7 +13,7 @@ all: charging_sdl
 
 %.o: %.c
 	@echo CC $<
-	@$(CC) -c -o $@ $< $(CCFLAGS) $(if $(LIBBATTERY),-DUSE_LIBBATTERY)
+	@$(CC) -c -o $@ $< $(CCFLAGS) $(if $(LIBBATTERY),-DUSE_LIBBATTERY) $(if $(OLED),-DOLED_SCREEN)
 
 charging_sdl: $(OBJECTS)
 	@echo LD $@

@@ -7,6 +7,11 @@
 #include <SDL2/SDL_power.h>
 #endif
 
+#ifdef OLED_SCREEN
+#include <stdlib.h>
+#include <time.h>
+#endif
+
 #include <unistd.h>
 
 #include <atlas.h>
@@ -21,6 +26,7 @@ void usage(char* appname)  {
     -t: launch %s in test mode\n\
     -p: display battery capacity\n\
     -c: attempt to get current\n\
+    -o: prevent burn-in on OLED screens\n\
     -f: font to use\n", appname, appname);
 }
 
@@ -71,7 +77,7 @@ void update_bat_info(struct battery_device* dev) {
 int main (int argc, char** argv) {
     LOG("INFO", "charging-sdl version %s", CHARGING_SDL_VERSION);
 
-    char flag_test = 0, flag_percent = 0, flag_current = 0;
+    char flag_test = 0, flag_percent = 0, flag_current = 0, flag_oled = 0;
 
     int screen_w = 480;
     int screen_h = 800;
@@ -87,17 +93,24 @@ int main (int argc, char** argv) {
     TTF_Font* font_struct = NULL;
 
     int opt;
-    while ((opt = getopt(argc, argv, "tpcf:")) != -1) {
+    while ((opt = getopt(argc, argv, "tpcof:")) != -1) {
         switch (opt) {
             case 't': flag_test = 1; break;
             case 'p': flag_percent = 1; break;
             case 'c': flag_current = 1; break;
+            case 'o': flag_oled = 1; break;
             case 'f': flag_font = optarg; break;
             default:
                 usage(argv[0]);
                 exit(1);
             }
     }
+#ifndef OLED_SCREEN
+    if (flag_oled) {
+        LOG("WARNING", "%s was compiled without OLED burn-in prevention",
+                argv[0]);
+    }
+#endif
     if (SDL_Init(SDL_INIT_EVENTS | SDL_INIT_VIDEO) < 0) {
         ERROR("failed to init SDL: %s", SDL_GetError());
         exit(1);
@@ -195,8 +208,17 @@ int main (int argc, char** argv) {
     Uint32 start = SDL_GetTicks();
 
     SDL_Rect battery_area;
-
     make_battery_rect(screen_w, screen_h, &battery_area);
+
+#ifdef OLED_SCREEN
+    SDL_Rect oled_rect;
+    if (flag_oled) {
+        srand(time(NULL));
+        make_oled_rect(screen_h, &oled_rect);
+        SDL_SetRenderDrawColor(renderer, 128, 128, 128, 255);
+    }
+#endif
+
     bat_info.current = -1.0f;
     bat_info.is_charging = 0;
     bat_info.percent = -1;
@@ -235,6 +257,12 @@ int main (int argc, char** argv) {
             }
             SDL_RenderCopy(renderer, lightning_icon_texture, NULL, &is_charging_area);
         }
+#ifdef OLED_SCREEN
+        if (flag_oled) {
+            SDL_RenderFillRect(renderer, &oled_rect);
+            move_oled_rect(screen_w, screen_h, &oled_rect);
+        }
+#endif
         SDL_RenderPresent(renderer);
         if(flag_test) {
             while (SDL_PollEvent(&ev)) {
