@@ -7,10 +7,8 @@
 #include <SDL2/SDL_power.h>
 #endif
 
-#ifdef OLED_SCREEN
 #include <stdlib.h>
 #include <time.h>
-#endif
 
 #include <unistd.h>
 
@@ -105,12 +103,6 @@ int main (int argc, char** argv) {
                 exit(1);
             }
     }
-#ifndef OLED_SCREEN
-    if (flag_oled) {
-        LOG("WARNING", "%s was compiled without OLED burn-in prevention",
-                argv[0]);
-    }
-#endif
     if (SDL_Init(SDL_INIT_EVENTS | SDL_INIT_VIDEO) < 0) {
         ERROR("failed to init SDL: %s", SDL_GetError());
         exit(1);
@@ -210,14 +202,12 @@ int main (int argc, char** argv) {
     SDL_Rect battery_area;
     make_battery_rect(screen_w, screen_h, &battery_area);
 
-#ifdef OLED_SCREEN
     SDL_Rect oled_rect;
     if (flag_oled) {
         srand(time(NULL));
         make_oled_rect(screen_h, &oled_rect);
         SDL_SetRenderDrawColor(renderer, 128, 128, 128, 255);
     }
-#endif
 
     bat_info.current = -1.0f;
     bat_info.is_charging = 0;
@@ -257,12 +247,10 @@ int main (int argc, char** argv) {
             }
             SDL_RenderCopy(renderer, lightning_icon_texture, NULL, &is_charging_area);
         }
-#ifdef OLED_SCREEN
         if (flag_oled) {
             SDL_RenderFillRect(renderer, &oled_rect);
             move_oled_rect(screen_w, screen_h, &oled_rect);
         }
-#endif
         SDL_RenderPresent(renderer);
         if(flag_test) {
             while (SDL_PollEvent(&ev)) {
