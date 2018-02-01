@@ -31,4 +31,5 @@ Charging screen for the initramfs.
 - `-t` test mode, keep the application open until explicitly closed and is not in full screen
 - `-p` display the percent charged the battery is
 - `-c` display current when charging (if available - see build section)
+- `-o` display a square, and move it randomly around the screen to prevent burn-in on OLED screens
 - `-f` font used to display all text
